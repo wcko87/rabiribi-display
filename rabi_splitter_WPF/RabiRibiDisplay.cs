@@ -395,5 +395,43 @@ namespace rabi_splitter_WPF
             mainWindow.SendMessage($"setgametime {time}\r\n");
         }
 
+
+        public string TrySetProperty(string varName, string value)
+        {
+            try
+            {
+                switch (varName)
+                {
+                    case "deaths":
+                        {
+                            var intValue = int.Parse(value);
+                            inGameState.nDeaths = intValue;
+                            inGameState.nDeathsAlt = intValue;
+                            break;
+                        }
+                    case "resets":
+                        {
+                            var intValue = int.Parse(value);
+                            inGameState.nRestarts = intValue;
+                            break;
+                        }
+
+                    default:
+                        {
+                            return $"Unknown Property: {varName}";
+                        }
+                }
+            }
+            catch (FormatException)
+            {
+                return $"Invalid Format: {value}";
+            }
+            catch (OverflowException)
+            {
+                return $"Overflow: {value}";
+            }
+
+            return null;
+        }
     }
 }

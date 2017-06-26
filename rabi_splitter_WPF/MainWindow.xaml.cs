@@ -1,20 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 
 namespace rabi_splitter_WPF
@@ -180,6 +172,74 @@ namespace rabi_splitter_WPF
             {
                 s.ScrollToEnd();
             }
+        }
+
+        private void CommandButton_Click(object sender, RoutedEventArgs e)
+        {
+            var userInput = SpawnMessageBox("Input Command");
+            if (userInput == null) return;
+            debugContext.Log($">>> {userInput}");
+
+            var args = userInput.Split();
+            if (args.Length < 1) return;
+
+            string errorMessage = null;
+            switch (args[0])
+            {
+                case "set":
+                    if (args.Length < 3)
+                    {
+                        errorMessage = "Invalid Format. Expected 'set <varname> <value>'";
+                        break;
+                    }
+                    errorMessage = rabiRibiDisplay.TrySetProperty(args[1], args[2]);
+                    break;
+                default:
+                    errorMessage = "Invalid Command";
+                    break;
+            }
+            if (errorMessage != null) {
+                debugContext.Log(errorMessage);
+            }
+        }
+        
+        private string SpawnMessageBox(string label)
+        {
+            var dialog = new System.Windows.Forms.Form()
+            {
+                Height = 105,
+                Width = 340,
+                StartPosition = System.Windows.Forms.FormStartPosition.CenterParent,
+                FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog,
+                MaximizeBox = false,
+                MinimizeBox = false,
+            };
+
+            var textLabel = new System.Windows.Forms.Label() { Left = 0, Top = 0, Width = 320, Text = label, TextAlign = System.Drawing.ContentAlignment.MiddleCenter };
+            var textBox = new System.Windows.Forms.TextBox() { Left = 10, Top = 20, Width = 300 };
+            var cancelButton = new System.Windows.Forms.Button() { Text = "Cancel", Left = 70, Width = 80, Top = 40, DialogResult = System.Windows.Forms.DialogResult.Cancel };
+            var confirmButton = new System.Windows.Forms.Button() { Text = "Ok", Left = 170, Width = 80, Top = 40, DialogResult = System.Windows.Forms.DialogResult.OK };
+            cancelButton.Click += (s, e) => { dialog.Close(); };
+            confirmButton.Click += (s, e) => { dialog.Close(); };
+            dialog.Controls.Add(textBox);
+            dialog.Controls.Add(textLabel);
+            dialog.Controls.Add(cancelButton);
+            dialog.Controls.Add(confirmButton);
+            dialog.CancelButton = cancelButton;
+            dialog.AcceptButton = confirmButton;
+            
+            string userInput;
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                userInput = textBox.Text;
+            }
+            else
+            {
+                userInput = null;
+            }
+            dialog.Dispose();
+
+            return userInput;
         }
     }
 }
